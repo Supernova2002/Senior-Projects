@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import sys
+import math
 import matplotlib.animation as animation
 from sympy import Symbol, solve
 from math import*
@@ -82,14 +83,17 @@ for measure in second_half:
     predicated_state_covariances.append(next_covar)
     error = next_mean[0:3] - measure
     predicted_error.append(error)
+    yaw.append(math.degrees(np.arctan(next_mean[1]/next_mean[0])))
+    pitch.append(90-math.degrees(np.arctan(next_mean[3]/(np.sqrt(np.power(next_mean[0],2) + np.power(next_mean[1],2))))))
 time2 = time.time()
 print("Time for kalman filter is " + str(time2-time1) + " seconds")
 #print(predicted_error)
 print(predicted_error[-1])
+print(yaw)
+print(pitch)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.scatter(basketball_x, basketball_z, basketball_y, c = 'red', label = "basketball")
-#ax.scatter(predicted_state_means[:,0],predicted_state_means[:,2],predicted_state_means[:,1], c="black", label = "kalman part 2")
 ax.legend()
 ax.set_xlabel("Depth (meters)")
 ax.set_zlabel("Height (meters)")
