@@ -9,6 +9,7 @@ import matplotlib.animation as animation
 from sympy import Symbol, solve
 from math import*
 from pykalman import KalmanFilter
+from metran.kalmanfilter import SPKalmanFilter
 
 projectile_df = pd.read_csv("position_data1712690560.7402215.csv")        
 projectile_df = projectile_df.dropna()
@@ -28,7 +29,8 @@ initial_distance = basketball_y[1]-basketball_y[0]
 initial_velocity = (basketball_y[1]-basketball_y[0]) * framerate 
 dT = 1 / framerate
 g = 9.81
-initial_state = np.asarray([basketball_x[0],basketball_y[0],basketball_z[0],0,0,0,0,0,-1*g])
+#initial_state = np.asarray([basketball_x[0],basketball_y[0],basketball_z[0],0,0,0,0,0,-1*g])
+initial_state = [basketball_x[0],basketball_y[0],basketball_z[0],0,0,0,0,0,-1*g]
 transition_matrix = np.asarray(
     [
         [1., 0., 0., dT, 0., 0., 0., 0., 0.], # x pos
@@ -54,19 +56,24 @@ observation_matrix = np.asarray(
 
 
 
-kf1 = KalmanFilter(transition_matrices = transition_matrix,
-                observation_matrices = observation_matrix,
-                initial_state_mean = initial_state)
+
+#kf1 = KalmanFilter(transition_matrices = transition_matrix,
+#                observation_matrices = observation_matrix,
+#                initial_state_mean = initial_state)
 measurements = []
 
 for values in zip(basketball_x,basketball_y,basketball_z):
     measurements.append(values)
 
 shrink_factor =4
-
+kf1 = SPKalmanFilter()
+kf1.set_matrices(transition_matrix=transition_matrix,transition_covariance= np.cov(transition_matrix),observation_matrix=observation_matrix,observation_variance=np.cov(observation_matrix))
+kf1.set_observations(measurements)
+kf1.run_filter(initial_state)
+sys.exit(1)
 measurements = measurements[0::int(len(measurements)/60)]
 time1 = time.time()
-kf1 = kf1.em(measurements[:int(len(measurements)//shrink_factor)], n_iter=20)
+#kf1 = kf1.em(measurements[:int(len(measurements)//shrink_factor)], n_iter=20)
 print(len(measurements[:int(len(measurements)//shrink_factor)]))
 (smoothed_state_means, smoothed_state_covariances) = kf1.smooth(measurements[:int(len(measurements)//shrink_factor)])
 next_mean = smoothed_state_means[-1]
