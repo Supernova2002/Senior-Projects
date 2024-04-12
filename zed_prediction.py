@@ -10,16 +10,13 @@ from sympy import Symbol, solve
 from math import*
 from pykalman import KalmanFilter
 
-projectile_df = pd.read_csv("position_data1712690560.7402215.csv")        
+projectile_df = pd.read_csv("position_data1712872396.192517.csv")        
 projectile_df = projectile_df.dropna()
 basketball_x = projectile_df['x'].values
-basketball_x = basketball_x[:130]
 basketball_x = basketball_x *25.4 / 1000
 basketball_y = projectile_df['y'].values
-basketball_y = basketball_y[:130]
 basketball_y = basketball_y *25.4 / 1000
 basketball_z = projectile_df['z'].values
-basketball_z = basketball_z[:130]
 basketball_z = basketball_z *25.4/1000
 
 
@@ -62,9 +59,9 @@ measurements = []
 for values in zip(basketball_x,basketball_y,basketball_z):
     measurements.append(values)
 
-shrink_factor =4
+shrink_factor =3
 
-measurements = measurements[0::int(len(measurements)/60)]
+#measurements = measurements[0::int(len(measurements)/60)]
 time1 = time.time()
 kf1 = kf1.em(measurements[:int(len(measurements)//shrink_factor)], n_iter=20)
 print(len(measurements[:int(len(measurements)//shrink_factor)]))
@@ -83,14 +80,14 @@ for measure in second_half:
     predicated_state_covariances.append(next_covar)
     error = next_mean[0:3] - measure
     predicted_error.append(error)
-    yaw.append(math.degrees(np.arctan(next_mean[1]/next_mean[0])))
-    pitch.append(90-math.degrees(np.arctan(next_mean[3]/(np.sqrt(np.power(next_mean[0],2) + np.power(next_mean[1],2))))))
+    yaw.append(math.degrees(np.arctan(next_mean[2]/next_mean[0])))
+    pitch.append(math.degrees(np.arctan(next_mean[1]/(np.sqrt(np.power(next_mean[0],2) + np.power(next_mean[2],2))))))
 time2 = time.time()
 print("Time for kalman filter is " + str(time2-time1) + " seconds")
 #print(predicted_error)
-print(predicted_error[-1])
-print(yaw)
-print(pitch)
+print(predicted_error)
+#print(yaw)
+#print(pitch)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.scatter(basketball_x, basketball_z, basketball_y, c = 'red', label = "basketball")
